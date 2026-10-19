@@ -1,0 +1,186 @@
+/* Palette: a twilight sky, with the three survey filters as the only bright colors.
+   Band colors carry meaning everywhere (g = blue, r = red, i = amber). */
+:root {
+  --sky: #141c33;
+  --sky-deep: #0e1427;
+  --panel: #1b2542;
+  --line: #2c3961;
+  --text: #e7eaf4;
+  --muted: #94a0c2;
+  --band-g: #4fb3e8;
+  --band-r: #ef6a73;
+  --band-i: #f0b65a;
+  --ok: #6fd3a4;
+  --danger: #ff8a8a;
+  --radius-sm: 4px;
+  --radius-lg: 10px;
+  font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--sky);
+  font-variant-numeric: tabular-nums;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: var(--sky); }
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+h1 { font-size: 1.35rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.1rem; }
+h3 { font-size: 0.95rem; }
+p { margin: 0; }
+a { color: var(--band-g); }
+
+:focus-visible { outline: 2px solid var(--band-i); outline-offset: 2px; }
+
+button, input, select {
+  font: inherit;
+  color: inherit;
+}
+input, select {
+  background: var(--sky-deep);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  min-width: 0;
+}
+button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+}
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--band-g); border-color: var(--band-g); color: var(--sky-deep); font-weight: 700; }
+button.quiet { background: none; border-color: transparent; color: var(--muted); padding: 4px 6px; }
+button.quiet:hover { color: var(--text); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.band-1 { color: var(--band-g); }
+.band-2 { color: var(--band-r); }
+.band-3 { color: var(--band-i); }
+
+.muted { color: var(--muted); }
+.error { color: var(--danger); }
+.small { font-size: 0.85rem; }
+
+/* ------------------------------------------------------------- layout */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--sky-deep);
+  flex-wrap: wrap;
+}
+.topbar nav { display: flex; gap: 4px; }
+.topbar nav button { background: none; border: none; color: var(--muted); padding: 6px 10px; }
+.topbar nav button[aria-current="page"] { color: var(--text); box-shadow: inset 0 -2px 0 var(--band-g); border-radius: 0; }
+.topbar .spacer { flex: 1; }
+.status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.status.on i { background: var(--ok); }
+
+main { padding: 20px 24px 40px; max-width: 1400px; margin: 0 auto; }
+
+.live-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
+}
+@media (max-width: 1000px) { .live-grid { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+
+.counters { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 16px; }
+.counters div { display: flex; flex-direction: column; }
+.counters strong { font-size: 1.4rem; }
+.counters span { color: var(--muted); font-size: 0.8rem; }
+
+/* ------------------------------------------------------------- sky map (the centerpiece) */
+.skymap {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: radial-gradient(ellipse at center, #1c2850 0%, var(--sky-deep) 75%);
+  border-radius: var(--radius-lg);
+}
+.skymap .grid line { stroke: var(--line); stroke-width: 0.6; }
+.skymap .grid text { fill: var(--muted); font-size: 9px; }
+.skymap .cone { fill: rgba(240, 182, 90, 0.12); stroke: var(--band-i); stroke-dasharray: 3 2; stroke-width: 1.5; }
+.skymap .dot { cursor: pointer; }
+.skymap .dot.selected { stroke: var(--text); stroke-width: 2; }
+.skymap .flash { animation: flash 1.2s ease-out forwards; pointer-events: none; }
+@keyframes flash { from { r: 2; opacity: 0.9; } to { r: 14; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .skymap .flash { display: none; } }
+
+.legend { display: flex; gap: 16px; font-size: 0.85rem; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+.legend span::before { content: "●"; margin-right: 4px; }
+.legend .cone-key::before { content: "◌"; color: var(--band-i); }
+
+/* ------------------------------------------------------------- tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th { text-align: left; color: var(--muted); font-weight: 400; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 6px 8px; border-bottom: 1px solid rgba(44, 57, 97, 0.5); white-space: nowrap; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: rgba(79, 179, 232, 0.06); }
+tbody tr.selected { background: rgba(79, 179, 232, 0.12); }
+td.num, th.num { text-align: right; }
+.bogus { opacity: 0.45; }
+
+.feed { max-height: 320px; overflow-y: auto; }
+.feed-item { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.feed-item:last-child { border-bottom: none; }
+.feed-item .rule { color: var(--band-i); font-weight: 700; }
+
+.lightcurve { width: 100%; height: auto; display: block; }
+.lightcurve .axis line, .lightcurve .axis path { stroke: var(--line); }
+.lightcurve text { fill: var(--muted); font-size: 10px; }
+
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+
+/* ------------------------------------------------------------- rules */
+.rules-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 900px) { .rules-grid { grid-template-columns: 1fr; } }
+form.rule-form { display: flex; flex-direction: column; gap: 14px; }
+fieldset { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+legend { color: var(--muted); padding: 0 6px; font-size: 0.85rem; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+label input, label select { color: var(--text); }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row > * { flex: 1; }
+.row > button { flex: 0; }
+.check { flex-direction: row; align-items: center; gap: 8px; }
+.form-actions { display: flex; gap: 8px; }
+
+.rule-card { border-bottom: 1px solid var(--line); padding: 12px 0; display: flex; flex-direction: column; gap: 6px; }
+.rule-card:last-child { border-bottom: none; }
+.rule-card header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.rule-card.off { opacity: 0.55; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { background: var(--sky-deep); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; font-size: 0.8rem; }
+
+/* ------------------------------------------------------------- login */
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.login .panel { width: min(400px, 100%); display: flex; flex-direction: column; gap: 16px; }
+.login form { display: flex; flex-direction: column; gap: 12px; }
+.login .switch { background: none; border: none; color: var(--band-g); padding: 0; text-decoration: underline; }
+
+@media (max-width: 600px) {
+  main { padding: 16px; }
+  .topbar { padding: 12px 16px; gap: 12px; }
+}

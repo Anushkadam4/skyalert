@@ -1,0 +1,62 @@
+x-backend: &backend
+  build: ./backend
+  environment:
+    DATABASE_URL: postgresql+psycopg://skyalert:skyalert@postgres:5432/skyalert
+    REDIS_URL: redis://redis:6379/0
+    JWT_SECRET: ${JWT_SECRET:-change-me-to-a-long-random-string-please}
+    CORS_ORIGINS: http://localhost:8080,http://localhost:5173
+    # Lets webhooks reach a local test receiver (docker network addresses are private).
+    ALLOW_PRIVATE_WEBHOOKS: ${ALLOW_PRIVATE_WEBHOOKS:-false}
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_healthy }
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: skyalert
+      POSTGRES_PASSWORD: skyalert
+      POSTGRES_DB: skyalert
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyalert"]
+      interval: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 20
+
+  api:
+    <<: *backend
+    ports: ["8000:8000"]
+
+  worker:
+    <<: *backend
+    command: ["python", "-m", "app.worker"]
+    deploy:
+      replicas: 2  # consumer group splits the stream between them
+
+  notifier:
+    <<: *backend
+    command: ["python", "-m", "app.notifier"]
+
+  producer:
+    <<: *backend
+    command: ["python", "-m", "app.producer", "--rate", "${ALERT_RATE:-20}"]
+
+  frontend:
+    build: ./frontend
+    ports: ["8080:80"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  redisdata:
